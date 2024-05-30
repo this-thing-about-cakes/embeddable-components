@@ -1,0 +1,48 @@
+cubes:
+  - name: users
+    title: "My users"
+    data_source: apidb
+    sql: >
+      select u."Id" as Id, u."LastAccess" as LastAccess , u."CreatedAt" as CreatedAt , ur."Name" as RoleName, us."Name" as UserStatusName, tow."Name" as TypeOfWorkName from "Users" u
+      left join "UserRoles" ur on ur."Id" = u."RoleId"
+      left join "UserStatuses" us on us."Id" = u."StatusId"
+      left join "TypeOfWorks" tow on tow."Id" = u."TypeOfWorkId"
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: lastAccess
+        title: "Last access"
+        sql: LastAccess
+        type: time
+
+      - name: roleName
+        title: "User Role"
+        sql: RoleName
+        type: string
+
+      - name: userStatus
+        title: "User Status"
+        sql: UserStatusName
+        type: string
+
+      - name: typeOfWork
+        title: "Type of work"
+        sql: TypeOfWorkName
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of users'
+      - name: lastGlobalAccess
+        sql: MAX(LastAccess)
+        type: time
+        title: "Last global access"
+
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started
