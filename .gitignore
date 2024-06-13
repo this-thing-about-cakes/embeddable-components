@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .embeddable-build
+.embeddable-dev-build
 
 # cube
 .env
@@ -30,3 +31,4 @@ dist-ssr
 
 # build files
 embeddable-entry-point.jsx
+.embeddable-dev-build

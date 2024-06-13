@@ -11,7 +11,7 @@ export const SMALL_FONT_SIZE = '12px';
 export const LIGHT_FONT = '#333942';
 export const REGULAR_FONT_SIZE = '14px'
 
-//general chart colors
+
 export const COLORS = [
   // '#2859C5',
   // '#F58D02',
