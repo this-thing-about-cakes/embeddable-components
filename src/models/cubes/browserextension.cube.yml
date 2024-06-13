@@ -1,0 +1,55 @@
+cubes:
+  - name: browserExtensionInstallations
+    title: "Browser extension installations"
+    data_source: apidb
+    sql: >
+      select
+        "Id" as Id,
+        "BrowserName" as BrowserName,
+        "OperatingSystemName" as OperatingSystemName,
+        "LastUse" as LastUse,
+        "CreatedAt" as CreatedAt,
+        CASE
+          WHEN bei."LastUse" >= CURRENT_DATE - INTERVAL '14 days' THEN 'Active'
+          ELSE 'Not active' END AS Status
+        from api."BrowserExtensionInstallations" bei
+        order by "CreatedAt"
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: browserName
+        title: "Browser"
+        sql: BrowserName
+        type: string
+
+      - name: operatingSystemName
+        title: "Operating System"
+        sql: OperatingSystemName
+        type: string
+
+      - name: lastUse
+        title: "Last Use"
+        sql: LastUse
+        type: time
+
+      - name: createdAt
+        title: "Created at"
+        sql: CreatedAt
+        type: time
+
+      - name: status
+        title: "Status"
+        sql: Status
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of browser extension installations'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

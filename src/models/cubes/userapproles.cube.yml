@@ -1,0 +1,35 @@
+cubes:
+  - name: userapproles
+    title: "User App Roles"
+    data_source: apidb
+    sql: >
+      select uar."Id" as Id, uar."CreatedAt" as CreatedAt, to_char(uar."CreatedAt", 'MM/YYYY') as MonthOfTheYear, wa."Name" as WorkAppName from api."UserAppRoles" uar inner join api."WorkApps" wa on wa."Id" = uar."WorkAppId" order by MonthOfTheYear
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: createdAt
+        title: "Created at"
+        sql: CreatedAt
+        type: time
+
+      - name: monthOfTheYear
+        title: "Month"
+        sql: MonthOfTheYear
+        type: string
+
+      - name: WorkAppName
+        title: "Work App Name"
+        sql: WorkAppName
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of user app roles'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

@@ -1,0 +1,35 @@
+cubes:
+  - name: workapps
+    title: "WorkApps"
+    data_source: apidb
+    sql: >
+      select "Id" as Id, "Name" as Name, "CreatedAt" as CreatedAt, to_char("CreatedAt", 'MM/YYYY') as MonthOfTheYear from api."WorkApps" order by MonthOfTheYear
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: name
+        title: "Name"
+        sql: Name
+        type: string
+
+      - name: createdAt
+        title: "Created at"
+        sql: CreatedAt
+        type: time
+
+      - name: monthOfTheYear
+        title: "Month"
+        sql: MonthOfTheYear
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of workapps'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

@@ -1,0 +1,62 @@
+cubes:
+  - name: accesses
+    title: "Accesses"
+    data_source: apidb
+    sql: >
+      select
+        uar."WorkAppId" as WorkAppId,
+        uar."UserId" as UserId,
+        accesses.LastWorkAppAccess,
+        CASE
+          WHEN accesses.LastWorkAppAccess >= CURRENT_DATE - INTERVAL '30 days' THEN 'Last 30 days'
+          WHEN accesses.LastWorkAppAccess >= CURRENT_DATE - INTERVAL '90 days' THEN 'Last 90 days'
+          WHEN accesses.LastWorkAppAccess >= CURRENT_DATE - INTERVAL '180 days' THEN 'Last 180 days'
+          ELSE 'Not in last 180 days' END AS LastAccessStatus
+      from api."UserAppRoles" uar
+      left join (
+        select
+          userAudits.UserId,
+          userAudits.WorkAppId,
+          max(userAudits.LastAccess) as LastWorkAppAccess
+          from (
+              select
+                au."UserId" as UserId,
+                t."WorkAppId" as WorkAppId,
+                au."CreatedAt"  as LastAccess
+              from api."UserToolAudits" au
+            inner join api."Tools" t
+              on t."Id" = au."ToolId"
+          ) userAudits
+          group by UserId, WorkAppId
+      ) accesses on uar."WorkAppId" = accesses.WorkAppId and uar."UserId" = accesses.UserId
+      order by LastWorkAppAccess
+    dimensions:
+      - name: workAppId
+        title: "WorkApp Id"
+        sql: WorkAppId
+        type: string
+        primary_key: true
+
+      - name: userId
+        title: "User Id"
+        sql: UserId
+        type: string
+
+      - name: lastAccess
+        title: "Last Access"
+        sql: LastWorkAppAccess
+        type: time
+
+      - name: lastAccessStatus
+        title: "Last Access Status"
+        sql: LastAccessStatus
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of accesses'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

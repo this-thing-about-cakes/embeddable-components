@@ -1,9 +1,14 @@
-- name: Example customer 1
+- name: Cakewalk
   securityContext:
-    country: United States
-  environment: customer1
+    country: Germamy
+  environment: c3260dc1-532f-4945-9f71-b3e2aabf640e
 
-- name: Example customer 2
+- name: GetCakewalk
   securityContext:
     country: Germany
-  environment: customer2
+  environment: 0d8aadfc-1474-42b8-b6b7-a2593ed19aba
+
+- name: Sample Customer
+  securityContext:
+    country: Germany
+  environment: b79c515b-22bb-4bd4-8f95-8a8519b10755
