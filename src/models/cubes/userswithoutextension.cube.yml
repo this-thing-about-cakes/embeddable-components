@@ -1,0 +1,22 @@
+cubes:
+  - name: userswithoutextension
+    title: "Users without extension"
+    data_source: apidb
+    sql: >
+      select u."Id" as Id from api."Users" u
+      where u."Id" not in (select bei."UserId" from api."BrowserExtensionInstallations" bei where bei."LastUse" >= CURRENT_DATE - INTERVAL '14 days')
+      and u."StatusId" in (1, 2)
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+    measures:
+      - name: count
+        type: count
+        title: '# of users'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

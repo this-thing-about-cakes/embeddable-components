@@ -7,5 +7,5 @@ export default defineConfig({
   pushBaseUrl: 'https://app-api.eu.embeddable.com',
   audienceUrl: 'https://auth.eu.embeddable.com',
   authDomain: 'auth.eu.embeddable.com',
-  authClientId: process.env.AUTH_CLIENT_ID,
+  authClientId: '6OGPwIQsVmtrBKhNrwAaXhz4ePb0kBGV',
 });

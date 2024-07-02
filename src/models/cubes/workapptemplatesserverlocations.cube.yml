@@ -1,0 +1,37 @@
+cubes:
+  - name: workapptemplatesserverlocations
+    title: "WorkAppTemplatesServerLocations"
+    data_source: common
+    sql: >
+      SELECT
+          "Id" AS Id,
+          unnest("ServerLocations") AS ServerLocation
+      FROM
+          api."WorkAppTemplates"
+    dimensions:
+      - name: id
+        title: "Id"
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: serverLocation
+        title: "ServerLocation"
+        sql: ServerLocation
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of templates'
+
+    pre_aggregations:
+      - name: workapptemplatesserverlocations_rollup
+        type: rollup
+        dimensions:
+          - id
+          - serverLocation
+        indexes:
+          - name: category_index
+            columns:
+              - id

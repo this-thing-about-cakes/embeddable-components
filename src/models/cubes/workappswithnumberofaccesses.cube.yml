@@ -1,0 +1,34 @@
+cubes:
+  - name: workappswithnumberofaccesses
+    title: "WorkApps with number of accesses"
+    data_source: apidb
+    sql: >
+      select wa."Id" as Id, wa."Name" as Name, count(*) as NumberOfAccesses
+        from api."WorkApps" wa
+        inner join api."UserAppRoles" uar on wa."Id" = uar."WorkAppId"
+      group by wa."Id", wa."Name"
+      order by NumberOfAccesses desc limit 10
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: name
+        title: "Name"
+        sql: Name
+        type: string
+
+      - name: numberOfAccesses
+        title: "Number of accesses"
+        sql: NumberOfAccesses
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of workapps'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

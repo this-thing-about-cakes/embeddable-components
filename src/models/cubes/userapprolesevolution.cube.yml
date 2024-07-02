@@ -1,0 +1,43 @@
+cubes:
+  - name: userapprolesevolution
+    title: "User App Roles Evolution"
+    data_source: apidb
+    sql: >
+      select MonthOfTheYear, WorkAppName, CumulativeCount from (
+        SELECT
+            to_char(uar."CreatedAt", 'MM/YYYY') as MonthOfTheYear,
+            wa."Name" as WorkAppName,
+            (SELECT COUNT(*)
+            FROM api."UserAppRoles" uar_sub
+            WHERE to_char(uar_sub."CreatedAt", 'MM/YYYY') <= to_char(uar."CreatedAt", 'MM/YYYY')
+              AND uar_sub."WorkAppId" = uar."WorkAppId") AS CumulativeCount
+
+        FROM
+            api."UserAppRoles" uar
+        INNER JOIN
+            api."WorkApps" wa
+        ON
+            wa."Id" = uar."WorkAppId"
+            ) as subselect
+      group by WorkAppName, MonthOfTheYear, CumulativeCount
+      ORDER BY
+          MonthOfTheYear, WorkAppName
+    dimensions:
+      - name: monthOfTheYear
+        title: "Month"
+        sql: MonthOfTheYear
+        type: string
+
+      - name: WorkAppName
+        title: "Work App Name"
+        sql: WorkAppName
+        type: string
+
+      - name: CumulativeCount
+        title: "Cumulative Count"
+        sql: CumulativeCount
+        type: number
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

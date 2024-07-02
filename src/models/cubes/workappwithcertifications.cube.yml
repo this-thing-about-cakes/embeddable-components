@@ -1,0 +1,48 @@
+cubes:
+  - name: workappswithcertifications
+    title: "WorkAppsWithCertifications"
+    data_source: apidb
+    sql: >
+      select "Id" as Id, "WorkAppTemplateId" as WorkAppTemplateId from api."WorkApps"
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: workAppTemplateId
+        title: "WorkAppTemplateId"
+        sql: WorkAppTemplateId
+        type: string
+
+    measures:
+      - name: count
+        type: count
+        title: '# of workapps'
+
+    pre_aggregations:
+      - name: workappswithcertifications_rollup
+        type: rollup
+        dimensions:
+          - id
+          - workAppTemplateId
+        indexes:
+          - name: category_index
+            columns:
+              - workAppTemplateId
+
+      - name: combined_rollup
+        type: rollup_join
+        dimensions:
+          - workapptemplatescertifications.certification
+          - workapptemplatescertifications.id
+          - id
+          - workAppTemplateId
+        rollups:
+          - workapptemplatescertifications.workapptemplatescertifications_rollup
+          - workappswithcertifications_rollup
+
+    joins:
+      - name: workapptemplatescertifications # the name of the data model to join to (not the table)
+        sql: '{workappswithcertifications}.workAppTemplateId = {workapptemplatescertifications}.id'
+        relationship: many_to_one

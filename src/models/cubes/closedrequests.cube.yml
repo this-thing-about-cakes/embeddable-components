@@ -1,0 +1,29 @@
+cubes:
+  - name: closedrequests
+    title: "Closed Requests"
+    data_source: apidb
+    sql: >
+      select "Id" as Id, "UpdatedAt" as ClosedAt from api."BaseRequests"
+        where "BaseRequestStatusId" in (
+          select brs."Id" from api."BaseRequestStatuses" brs where brs."IsSuccessfullyCompleted"
+        )
+      order by "UpdatedAt" desc
+    dimensions:
+      - name: id
+        sql: Id
+        type: string
+        primary_key: true
+
+      - name: closedAt
+        title: "Closed at"
+        sql: ClosedAt
+        type: time
+
+    measures:
+      - name: count
+        type: count
+        title: '# of requests'
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

@@ -7,6 +7,7 @@ cubes:
       left join api."UserRoles" ur on ur."Id" = u."RoleId"
       left join api."UserStatuses" us on us."Id" = u."StatusId"
       left join api."TypeOfWorks" tow on tow."Id" = u."TypeOfWorkId"
+      where u."StatusId" in (1, 2)
     dimensions:
       - name: id
         sql: Id
@@ -16,6 +17,11 @@ cubes:
       - name: lastAccess
         title: "Last access"
         sql: LastAccess
+        type: time
+
+      - name: createdAt
+        title: "Created at"
+        sql: CreatedAt
         type: time
 
       - name: roleName
