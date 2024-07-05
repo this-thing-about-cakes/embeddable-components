@@ -12,5 +12,5 @@ type Props = {
 export default (props: Props) => {
   const { title, body } = props;
 
-  return <Container title={title}>{body}</Container>;
+  return <Container className='cakewalk-title' title={title}>{body}</Container>;
 };

@@ -1,11 +1,11 @@
 cubes:
-  - name: userapprolesevolution
-    title: "User App Roles Evolution"
+  - name: workappsevolution
+    title: "WorkApps Evolution"
     data_source: apidb
     sql: >
       WITH RECURSIVE date_series AS (
           SELECT MIN("CreatedAt")::date AS date
-          FROM api."UserAppRoles" where "CreatedAt" > '2022-01-01'
+          FROM api."WorkApps" where "CreatedAt" > '2022-01-01'
           UNION ALL
           SELECT (date + INTERVAL '1 day')::date
           FROM date_series
@@ -14,7 +14,7 @@ cubes:
       SELECT
           ds.date as CreatedAt,
           (SELECT COUNT(*)
-          FROM api."UserAppRoles" u
+          FROM api."WorkApps" u
           WHERE u."CreatedAt"::date <= ds.date) AS CumulativeCount
       FROM
           date_series ds
@@ -32,9 +32,9 @@ cubes:
         type: number
 
     measures:
-      - name: numberOfAccesses
+      - name: numberOfApps
         type: max
-        title: "Number of accesses"
+        title: "Number of Applications"
         sql: CumulativeCount
 
     pre_aggregations:
