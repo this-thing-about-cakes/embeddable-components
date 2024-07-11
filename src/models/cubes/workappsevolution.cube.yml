@@ -15,7 +15,8 @@ cubes:
           ds.date as CreatedAt,
           (SELECT COUNT(*)
           FROM api."WorkApps" u
-          WHERE u."CreatedAt"::date <= ds.date) AS CumulativeCount
+          WHERE u."CreatedAt"::date <= ds.date and "WorkAppStatusId" != 2) AS CumulativeCount
+
       FROM
           date_series ds
       ORDER BY

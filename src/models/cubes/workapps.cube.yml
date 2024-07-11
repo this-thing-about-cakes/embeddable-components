@@ -3,7 +3,7 @@ cubes:
     title: "WorkApps"
     data_source: apidb
     sql: >
-      select "Id" as Id, "Name" as Name, "CreatedAt" as CreatedAt, to_char("CreatedAt", 'MM/YYYY') as MonthOfTheYear from api."WorkApps" order by MonthOfTheYear
+      select "Id" as Id, "Name" as Name, "CreatedAt" as CreatedAt, to_char("CreatedAt", 'MM/YYYY') as MonthOfTheYear from api."WorkApps" where "WorkAppStatusId" != 2  order by MonthOfTheYear
     dimensions:
       - name: id
         sql: Id

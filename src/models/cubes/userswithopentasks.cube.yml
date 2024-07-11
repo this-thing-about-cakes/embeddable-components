@@ -1,0 +1,35 @@
+cubes:
+  - name: usersWithOpenTasks
+    title: "Top users with open tasks"
+    data_source: apidb
+    sql: >
+      select * from (
+        select
+        u."FullName" as FullName,
+        u."Email" as Email,
+        count(*) as OpenTasks
+        from api."Users" u
+        inner join api."BaseTasks" bt on bt."AssignedUserId"  = u."Id"  and "GenericBaseTaskStatusId" = 'dcf2ce9f-d860-44d0-93d2-4bdda7ad6a2a'
+        group by u."FullName" , u."Email"
+        order by OpenTasks desc, FullName limit 10
+      ) usersWithTasks where OpenTasks > 0
+    dimensions:
+      - name: email
+        title: "Email"
+        sql: Email
+        type: string
+        primary_key: true
+
+      - name: fullName
+        sql: FullName
+        type: string
+        title: Name
+
+      - name: openTasks
+        title: "Open tasks"
+        sql: OpenTasks
+        type: number
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

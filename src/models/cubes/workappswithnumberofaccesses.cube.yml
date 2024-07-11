@@ -6,6 +6,7 @@ cubes:
       select wa."Id" as Id, wa."Name" as Name, count(*) as NumberOfAccesses
         from api."WorkApps" wa
         inner join api."UserAppRoles" uar on wa."Id" = uar."WorkAppId"
+      where wa."WorkAppStatusId" != 2
       group by wa."Id", wa."Name"
       order by NumberOfAccesses desc
     dimensions:

@@ -1,0 +1,57 @@
+cubes:
+  - name: requestsevolution
+    title: "Requests Evolution"
+    data_source: apidb
+    sql: >
+      WITH RECURSIVE date_series AS (
+          SELECT MIN("CreatedAt")::date AS date
+          FROM api."BaseRequests" where "CreatedAt" > '2022-01-01'
+          UNION ALL
+          SELECT (date + INTERVAL '1 day')::date
+          FROM date_series
+          WHERE (date + INTERVAL '1 day')::date <= CURRENT_DATE
+      )
+      SELECT
+          ds.date as CreatedAt,
+          (SELECT COUNT(*)
+          FROM api."BaseRequests" u
+          inner join api."BaseRequestStatuses" brs on u."BaseRequestStatusId" = brs."Id" and brs."IsActive" = false
+          WHERE u."CreatedAt"::date <= ds.date) AS NotActiveCumulativeCount,
+         (SELECT COUNT(*)
+          FROM api."BaseRequests" u
+          inner join api."BaseRequestStatuses" brs on u."BaseRequestStatusId" = brs."Id"
+          WHERE u."CreatedAt"::date <= ds.date) AS TotalCumulativeCount
+      FROM
+          date_series ds
+      ORDER BY
+          ds.date
+    dimensions:
+      - name: CreatedAt
+        title: "CreatedAt"
+        sql: CreatedAt
+        type: time
+
+      - name: NotActiveCumulativeCount
+        title: "Not Active Cumulative Count"
+        sql: NotActiveCumulativeCount
+        type: number
+
+      - name: TotalCumulativeCount
+        title: "Total Cumulative Count"
+        sql: TotalCumulativeCount
+        type: number
+
+    measures:
+      - name: numberOfClosedRequests
+        type: max
+        title: "Number of Closed Requests"
+        sql: NotActiveCumulativeCount
+
+      - name: numberOfCreatedRequests
+        type: max
+        title: "Number of Created Requests"
+        sql: TotalCumulativeCount
+
+    pre_aggregations:
+    # Pre-aggregation definitions go here.
+    # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started

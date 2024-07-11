@@ -3,7 +3,7 @@ cubes:
     title: "User App Roles"
     data_source: apidb
     sql: >
-      select uar."Id" as Id, uar."CreatedAt" as CreatedAt, to_char(uar."CreatedAt", 'MM/YYYY') as MonthOfTheYear, wa."Name" as WorkAppName from api."UserAppRoles" uar inner join api."WorkApps" wa on wa."Id" = uar."WorkAppId" order by MonthOfTheYear
+      select uar."Id" as Id, uar."CreatedAt" as CreatedAt, to_char(uar."CreatedAt", 'YYYY-MM') as MonthOfTheYear, wa."Name" as WorkAppName from api."UserAppRoles" uar inner join api."WorkApps" wa on wa."Id" = uar."WorkAppId" order by MonthOfTheYear
     dimensions:
       - name: id
         sql: Id

@@ -9,8 +9,6 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from '../../icons';
 import Dropdown from '../Dropdown';
 
 const ranges = [
-  'Today',
-  'Yesterday',
   'This week',
   'Last week',
   'Last 7 days',
