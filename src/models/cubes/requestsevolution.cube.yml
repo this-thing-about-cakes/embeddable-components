@@ -44,12 +44,12 @@ cubes:
     measures:
       - name: numberOfClosedRequests
         type: max
-        title: "Number of Closed Requests"
+        title: "Completed requests"
         sql: NotActiveCumulativeCount
 
       - name: numberOfCreatedRequests
         type: max
-        title: "Number of Created Requests"
+        title: "Submitted requests"
         sql: TotalCumulativeCount
 
     pre_aggregations:

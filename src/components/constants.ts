@@ -26,17 +26,14 @@ export const COLORS = [
   // '#D7D7E5',
   // '#FFD37A'
   '#CEA8F6',
+  '#EFE0FF',
+  '#678CB8',
+  '#CADBEF',
+  '#774BCE',
+  '#E95757',
   '#F5BC2D',
   '#54A17C',
-  '#678CB8',
-  '#EE7D5F',
-  '#E95757',
-  '#6B7280',
-  '#895DB7',
-  '#B88402',
-  '#E0E0E0',
-  '#F9F9FB',
-  '#CADBEF',
+  '#E9EBED',
 ];
 
 export const DATE_DISPLAY_FORMATS = {
