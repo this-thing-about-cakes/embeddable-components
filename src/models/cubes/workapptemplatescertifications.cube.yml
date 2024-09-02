@@ -8,6 +8,15 @@ cubes:
           unnest("Certifications") AS Certification
       FROM
           api."WorkAppTemplates"
+      UNION ALL
+        SELECT
+          "Id" AS Id,
+          'None' AS Certification
+        FROM
+          api."WorkAppTemplates"
+        WHERE
+          "Certifications" IS NULL
+          or array_length("Certifications", 1) is null
     dimensions:
       - name: id
         title: "Id"

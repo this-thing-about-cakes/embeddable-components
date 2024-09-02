@@ -1,5 +1,5 @@
 export const EMB_FONT =
-  'Roboto';
+  'Lexend';
 
 export const FONTS = {
   // 'Open Sans': 'OpenSans.ttf'

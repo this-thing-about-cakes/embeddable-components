@@ -1,6 +1,6 @@
 cubes:
-  - name: workappswithcertifications
-    title: "WorkAppsWithCertifications"
+  - name: workappswithserverlocations
+    title: "WorkAppsWithServerLocations"
     data_source: apidb
     sql: >
       select "Id" as Id, "WorkAppTemplateId" as WorkAppTemplateId from api."WorkApps" where "WorkAppTemplateId" is not null and "WorkAppStatusId" != 2
@@ -21,7 +21,7 @@ cubes:
         title: '# of workapps'
 
     pre_aggregations:
-      - name: workappswithcertifications_rollup
+      - name: workappswithserverlocations_rollup
         type: rollup
         dimensions:
           - id
@@ -32,21 +32,20 @@ cubes:
           - name: category_index
             columns:
               - workAppTemplateId
-
       - name: combined_rollup
         type: rollup_join
         dimensions:
-          - workapptemplatescertifications.certification
-          - workapptemplatescertifications.id
+          - workapptemplatesserverlocations.serverLocation
+          - workapptemplatesserverlocations.id
           - id
           - workAppTemplateId
         measures:
           - count
         rollups:
-          - workapptemplatescertifications.workapptemplatescertifications_rollup
-          - workappswithcertifications_rollup
+          - workapptemplatesserverlocations.workapptemplatesserverlocations_rollup
+          - workappswithserverlocations_rollup
 
     joins:
-      - name: workapptemplatescertifications # the name of the data model to join to (not the table)
-        sql: '{CUBE.workAppTemplateId} = {workapptemplatescertifications.id}'
+      - name: workapptemplatesserverlocations # the name of the data model to join to (not the table)
+        sql: '{CUBE.workAppTemplateId} = {workapptemplatesserverlocations.id}'
         relationship: many_to_one
