@@ -3,9 +3,9 @@ cubes:
     title: "Closed Requests"
     data_source: apidb
     sql: >
-      select "Id" as Id, "UpdatedAt" as ClosedAt from api."BaseRequests"
-        where "BaseRequestStatusId" in (
-          select brs."Id" from api."BaseRequestStatuses" brs where brs."IsSuccessfullyCompleted"
+      select "Id" as Id, "UpdatedAt" as ClosedAt from api."PolicyBasedRequests" pbr
+        where "PolicyBasedRequestStatusId"  in (
+          select "Id" from api."PolicyBasedRequestStatuses" pbrs where "IsActive" = false
         )
       order by "UpdatedAt" desc
     dimensions:

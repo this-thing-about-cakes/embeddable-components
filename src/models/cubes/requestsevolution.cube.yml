@@ -5,7 +5,7 @@ cubes:
     sql: >
       WITH RECURSIVE date_series AS (
           SELECT MIN("CreatedAt")::date AS date
-          FROM api."BaseRequests" where "CreatedAt" > '2022-01-01'
+          FROM api."PolicyBasedRequests" where "CreatedAt" > '2022-01-01'
           UNION ALL
           SELECT (date + INTERVAL '1 day')::date
           FROM date_series
@@ -14,12 +14,12 @@ cubes:
       SELECT
           ds.date as CreatedAt,
           (SELECT COUNT(*)
-          FROM api."BaseRequests" u
-          inner join api."BaseRequestStatuses" brs on u."BaseRequestStatusId" = brs."Id" and brs."IsActive" = false
+          FROM api."PolicyBasedRequests" u
+          inner join api."PolicyBasedRequestStatuses" brs on u."PolicyBasedRequestStatusId" = brs."Id" and brs."IsActive" = false
           WHERE u."CreatedAt"::date <= ds.date) AS NotActiveCumulativeCount,
          (SELECT COUNT(*)
-          FROM api."BaseRequests" u
-          inner join api."BaseRequestStatuses" brs on u."BaseRequestStatusId" = brs."Id"
+          FROM api."PolicyBasedRequests" u
+          inner join api."PolicyBasedRequestStatuses" brs on u."PolicyBasedRequestStatusId" = brs."Id"
           WHERE u."CreatedAt"::date <= ds.date) AS TotalCumulativeCount
       FROM
           date_series ds
