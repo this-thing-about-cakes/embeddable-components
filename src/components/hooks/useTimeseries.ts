@@ -8,10 +8,17 @@ import {
   addSeconds,
   addWeeks,
   addYears,
-  parseJSON
+  parseJSON,
+  subDays,
+  subHours,
+  subMinutes,
+  subMonths,
+  subQuarters,
+  subSeconds,
+  subWeeks,
+  subYears,
 } from 'date-fns';
 import { useCallback } from 'react';
-import { parseTime } from './useTimezone'
 
 type Record = { [p: string]: string };
 
@@ -23,48 +30,89 @@ const addTime: { [granularity: string]: (date: Date | number, amount: number) =>
   week: addWeeks,
   month: addMonths,
   quarter: addQuarters,
-  year: addYears
+  year: addYears,
 };
 
+const subTime: { [granularity: string]: (date: Date | number, amount: number) => Date } = {
+  second: subSeconds,
+  minute: subMinutes,
+  hour: subHours,
+  day: subDays,
+  week: subWeeks,
+  month: subMonths,
+  quarter: subQuarters,
+  year: subYears,
+};
 
 const unitsInSeconds = {
+  second: 1,
   minute: 60,
   hour: 3600,
   day: 86400,
   week: 604800,
-  month: 2629800,  // Roughly 30.44 days
-  quarter: 7889400,  // Roughly 91.31 days
-  year: 31557600  // Based on a typical Gregorian year
+  month: 2629800, // Roughly 30.44 days
+  quarter: 7889400, // Roughly 91.31 days
+  year: 31557600, // Based on a typical Gregorian year
 };
 
-export default ({ xAxis, granularity }: { xAxis?: Dimension; granularity?: Granularity }) => {
+type Props = {
+  xAxis: Dimension;
+  granularity?: Granularity;
+};
+
+export default (props: Props, sortOrder: string = 'asc') => {
+  const { xAxis, granularity } = props;
+
   const fillGaps = useCallback(
     (memo: Record[], record: Record) => {
-      const last = memo[memo.length - 1];
+      const prevRecord = memo[memo.length - 1]; // Get the last processed record
+      const xAxisValue = record[xAxis?.name || '']; // Current record's x-axis value
 
-      if (!last) return [...memo, record];
+      // Exclude records where the x-axis value is null or undefined
+      if (xAxisValue === null || xAxisValue === undefined) {
+        return memo;
+      }
 
-      const lastDate = last[xAxis?.name || ''];
+      // If there is no previous record, add the current record and return
+      if (!prevRecord) {
+        return [...memo, record];
+      }
 
-      const thisDate = record[xAxis?.name || ''];
+      const prevDate = prevRecord[xAxis?.name || '']; // Previous record's x-axis value
 
-      if (!lastDate || !thisDate) return [...memo, record];
+      // If the previous date is missing, add the current record and return
+      if (!prevDate) {
+        return [...memo, record];
+      }
 
-      const seqDate = addTime[granularity || 'day'](parseJSON(lastDate), 1);
-      const currDate = parseJSON(thisDate);
+      // Calculate the next expected date based on granularity and sort order
+      const seqDate =
+        sortOrder === 'asc'
+          ? addTime[granularity || 'day'](parseJSON(prevDate), 1)
+          : subTime[granularity || 'day'](parseJSON(prevDate), 1);
 
-      const seqDateSince1970 = seqDate.getTime();
-      const currDateSince1970 = currDate.getTime();
+      const dateSince1970 = parseJSON(xAxisValue).getTime(); // Timestamp of the current date
+      const seqDateSince1970 = seqDate.getTime(); // Timestamp of the expected sequence date
 
-      //comparison against granularity below to account for daylight savings time changes 
-      if((currDateSince1970 <= seqDateSince1970 || Math.abs(seqDateSince1970 - currDateSince1970) < unitsInSeconds[granularity || 'day'] * 1000)) return [...memo, record];
+      // If the current date is within the expected range, add it directly
+      if (
+        (sortOrder === 'asc'
+          ? dateSince1970 <= seqDateSince1970
+          : dateSince1970 >= seqDateSince1970) ||
+        Math.abs(seqDateSince1970 - dateSince1970) < unitsInSeconds[granularity || 'day'] * 1000
+      ) {
+        return [...memo, record];
+      }
 
+      // Add the expected sequence date to fill the gap
+      memo.push({
+        [xAxis?.name || '']: seqDate.toISOString().split('Z')[0], // Format to ISO string without timezone
+      });
 
-      memo.push({ [xAxis?.name || '']: seqDate.toISOString().split('Z')[0] });
-
+      // Recursive call to continue checking gaps
       return fillGaps(memo, record);
     },
-    [xAxis, granularity]
+    [xAxis, granularity, sortOrder], // Dependencies for useCallback
   );
 
   return { fillGaps };

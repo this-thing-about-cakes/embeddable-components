@@ -4,7 +4,7 @@ import {
   Dimension,
   Granularity,
   Measure,
-  TimeRange
+  TimeRange,
 } from '@embeddable.com/core';
 import {
   CategoryScale,
@@ -19,13 +19,12 @@ import {
   LinearScale,
   PointElement,
   Title,
-  Tooltip
+  Tooltip,
 } from 'chart.js';
 import 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { format, parseJSON } from 'date-fns';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 
 import {
@@ -33,13 +32,14 @@ import {
   DATE_DISPLAY_FORMATS,
   EMB_FONT,
   LIGHT_FONT,
-  SMALL_FONT_SIZE
+  SMALL_FONT_SIZE,
 } from '../../../constants';
 import useTimeseries from '../../../hooks/useTimeseries';
-import { parseTime, timeRangeToLocal } from '../../../hooks/useTimezone';
 import formatValue from '../../../util/format';
 import formatDateTooltips from '../../../util/formatDateTooltips';
 import hexToRgb from '../../../util/hexToRgb';
+import { parseTime, timeRangeToLocal } from '../../../util/timezone';
+import { setYAxisStepSize } from '../../../util/chartjs/common';
 import Container from '../../Container';
 
 ChartJS.register(
@@ -51,7 +51,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   Filler,
-  ChartDataLabels
+  ChartDataLabels,
 );
 
 ChartJS.defaults.font.size = parseInt(SMALL_FONT_SIZE);
@@ -75,6 +75,7 @@ type Props = {
   showLegend?: boolean;
   results: DataResponse;
   prevResults: DataResponse;
+  dps?: number;
 };
 
 type Record = { [p: string]: string };
@@ -82,10 +83,10 @@ type Record = { [p: string]: string };
 export default (propsInitial: Props) => {
   const props = useMemo(
     () => ({ ...propsInitial, granularity: propsInitial.granularity || 'day' }),
-    [propsInitial]
+    [propsInitial],
   );
 
-  const { fillGaps } = useTimeseries(props);
+  const { fillGaps } = useTimeseries(props, 'desc');
 
   const chartData: ChartData<'line'> = useMemo(() => {
     const { results, prevResults, metrics, applyFill } = props;
@@ -101,7 +102,7 @@ export default (propsInitial: Props) => {
         data:
           data?.map((d: Record) => ({
             y: parseFloat(d[yAxis.name] || '0'),
-            x: parseTime(d[props.xAxis?.name || ''])
+            x: parseTime(d[props.xAxis?.name || '']),
           })) || [],
         backgroundColor: applyFill
           ? hexToRgb(COLORS[i % COLORS.length], 0.2)
@@ -111,7 +112,7 @@ export default (propsInitial: Props) => {
         tension: 0.1,
         pointHoverRadius: 3,
         fill: applyFill,
-        cubicInterpolationMode: 'monotone' as const
+        cubicInterpolationMode: 'monotone' as const,
       })) || [];
 
     const datasets = [
@@ -127,7 +128,7 @@ export default (propsInitial: Props) => {
           data: props.prevTimeFilter
             ? prevData?.map((d: Record) => ({
                 y: parseFloat(d[metrics[i].name] || '0'),
-                x: parseTime(d[props.xAxis?.name || ''])
+                x: parseTime(d[props.xAxis?.name || '']),
               })) || []
             : [],
           backgroundColor: applyFill ? hexToRgb(COLORS[i % COLORS.length], 0.05) : c,
@@ -137,23 +138,23 @@ export default (propsInitial: Props) => {
           pointHoverRadius: 3,
           fill: applyFill && !!props.prevTimeFilter,
           segment: {
-            borderDash: [10, 5]
-          }
+            borderDash: [10, 5],
+          },
         };
 
         return update;
-      })
+      }),
     ];
 
     return {
-      datasets
+      datasets,
     };
   }, [props, fillGaps]);
 
   const chartOptions: ChartOptions<'line'> = useMemo(() => {
     const bounds = {
       period: timeRangeToLocal(props.timeFilter),
-      comparison: timeRangeToLocal(props.prevTimeFilter)
+      comparison: timeRangeToLocal(props.prevTimeFilter),
     };
 
     return {
@@ -161,71 +162,78 @@ export default (propsInitial: Props) => {
       maintainAspectRatio: false,
       interaction: {
         mode: 'index',
-        intersect: false
+        intersect: false,
       },
       layout: {
         padding: {
           left: 0,
           right: 0,
           top: props.showLabels ? 20 : 0, // Added so the highest data labels fits
-          bottom: 0
-        }
+          bottom: 0,
+        },
       },
       scales: {
         y: {
           min: props.yAxisMin,
           grace: '0%', // Add percent to add numbers on the y-axis above and below the max and min values
           grid: {
-            display: false
-          },
-          ticks: {
-            precision: 0
+            display: false,
           },
           title: {
             display: !!props.yAxisTitle,
-            text: props.yAxisTitle
-          }
+            text: props.yAxisTitle,
+          },
+          callback: function (value: number) {
+            return formatValue(
+              value.toString(), 
+              { type: 'number' }
+            )
+          },
+          afterDataLimits: function(axis) {
+            //Disable fractions unless they exist in the data.
+            setYAxisStepSize(axis, props.results, [...props.metrics], props.dps)
+          },
         },
         period: {
           min: bounds.period?.from?.toJSON(),
           max: bounds.period?.to?.toJSON(),
           grid: {
-            display: false
+            display: false,
           },
           type: 'time',
           time: {
             round: props.granularity,
             isoWeekday: true,
             displayFormats: DATE_DISPLAY_FORMATS,
-            unit: props.granularity
+            unit: props.granularity,
           },
           title: {
             display: !!props.xAxisTitle,
-            text: props.xAxisTitle
-          }
+            text: props.xAxisTitle,
+          },
         },
         comparison: {
           min: bounds.comparison?.from?.toJSON(),
           max: bounds.comparison?.to?.toJSON(),
           display: false,
           grid: {
-            display: false
+            display: false,
           },
           type: 'time',
           time: {
             round: props.granularity,
             isoWeekday: true,
             displayFormats: DATE_DISPLAY_FORMATS,
-            unit: props.granularity
+            unit: props.granularity,
           },
           title: {
-            display: false
-          }
-        }
+            display: false,
+          },
+        },
       },
       animation: {
         duration: 400,
-        easing: 'linear'
+        easing: 'linear',
       },
       plugins: {
         legend: {
@@ -233,23 +241,44 @@ export default (propsInitial: Props) => {
           position: 'bottom',
           labels: {
             usePointStyle: true,
-            boxHeight: 8
-          }
+            boxHeight: 8,
+          },
         },
         tooltip: {
           callbacks: {
-            title: (lines: any[]) => formatDateTooltips(lines, props.granularity)
-          }
+            title: (lines: any[]) => formatDateTooltips(lines, props.granularity),
+            label: function (context) {
+              //metric needed for formatting
+              const metricIndex = context.datasetIndex % props.metrics.length;
+              const metricObj = props.metrics[metricIndex];
+              let label = context.dataset.label || '';
+              if (context.parsed.y !== null) {
+                label += `: ${formatValue(`${context.parsed['y']}`, {
+                  type: 'number',
+                  dps: props.dps,
+                  meta: metricObj?.meta,
+                })}`;
+              }
+              return label;
+            },
+          },
         },
         datalabels: {
           align: 'top',
           display: props.showLabels ? 'auto' : false,
-          formatter: (v) => {
-            const val = v ? formatValue(v.y, { type: 'number', dps: props.dps }) : null;
+          formatter: (v, context) => {
+            //get metrics index including for comparison datasets 
+            const metricIndex = context.datasetIndex % props.metrics.length;
+            const metric = props.metrics[metricIndex];
+            const val = v ? formatValue(v.y, { 
+                type: 'number', 
+                dps: props.dps,
+                meta: metric?.meta
+            }) : null;
             return val;
-          }
-        }
-      }
+          },
+        },
+      },
     };
   }, [props]);
 

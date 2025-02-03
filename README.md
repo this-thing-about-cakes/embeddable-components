@@ -7,27 +7,27 @@ Hello and welcome to our Embeddable components **starter pack** built just for y
 
 ### Installation
 
-`npm i` # requires node 18 or later
+`npm i` # requires node 20 or later
 
 ### Build & Deploy
 This is how you push code changes to your Embeddable workspace
 
- 1. Head to https://app.embeddable.com and grab your **API Key**.
+ 1. Head to https://app.us.embeddable.com (or https://app.eu.embeddable.com) and grab your **API Key**.
 
- 2. **Build** the code bundle:
+ 2. **Set your location**: in [embeddable.config.ts](./embeddable.config.ts), uncomment either the US or EU config section.
 
-    `npm run embeddable:build`
+ 3. **Build** the code bundle: `npm run embeddable:build`
 
  4. **Push** the above code bundle to your workspace:
  
-     `npm run embeddable:push -- --api-key <API Key> --email <Email> --message <Message>`
+   `npm run embeddable:push -- --api-key <API Key> --email <Email> --message <Message>`
 
- 5. Head back to https://app.embeddable.com and "Create new Embeddable" using the **components** and **models** from your code bundle
+ 4. Head back to https://app.embeddable.com (or https://app.eu.embeddable.com) and "Create new Embeddable" using the **components** and **models** from your code bundle
 
 ### Local Development
 This is a "Preview workspace" (local to you) that allows you make changes locally and see them instantly without needing to "Build and Deploy".
 
-`npm run embeddable:dev` 
+`npm run embeddable:dev` (note: you may need to run `npm run embeddable:login` first)
 
 It opens a "Preview" workspace, that uses your local components and models.
 
@@ -66,3 +66,11 @@ While cube playground is running, you can run `npm run cube:cubestore` to get ac
 E.g. list the stored preaggregations using `SELECT * FROM information_schema.tables;`
 
 Official documentation on inspecting local pre-aggregations can be found [here](https://cube.dev/docs/product/caching/using-pre-aggregations#inspecting-pre-aggregations).
+
+## Environment variables
+
+Environment variables can be set in a `.env` file in the root of the project. The following variables are available:
+
+| Variable name       | Type                     | Default Value | Description                  |
+|---------------------|--------------------------|---------------|------------------------------|
+| CUBE_CLOUD_ENDPOINT | Cube Cloud Configuration |               | URL to connect to cube cloud |

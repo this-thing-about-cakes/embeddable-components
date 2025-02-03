@@ -1,28 +1,21 @@
-import { loadData } from '@embeddable.com/core';
+import { OrderBy, loadData } from '@embeddable.com/core';
 import { EmbeddedComponentMeta, Inputs, defineComponent } from '@embeddable.com/react';
-import { addMilliseconds } from 'date-fns';
 
 import Component from './index';
 
 export const meta = {
   name: 'CompareLineChart',
-  label: 'Chart: Line (time-series) comparison',
+  label: 'Line comparison (time-series)',
   classNames: ['inside-card'],
+  category: 'Charts: time-series comparison',
   inputs: [
-    {
-      name: 'title',
-      type: 'string',
-      label: 'Title',
-      description: 'The title for the chart',
-      category: 'Configure chart'
-    },
     {
       name: 'ds',
       type: 'dataset',
       label: 'Dataset',
       description: 'Dataset',
       defaultValue: false,
-      category: 'Configure chart'
+      category: 'Chart data',
     },
     {
       name: 'xAxis',
@@ -30,15 +23,9 @@ export const meta = {
       label: 'X-Axis',
       config: {
         dataset: 'ds',
-        supportedTypes: ['time']
+        supportedTypes: ['time'],
       },
-      category: 'Configure chart'
-    },
-    {
-      name: 'granularity',
-      type: 'granularity',
-      label: 'Granularity',
-      category: 'Configure chart'
+      category: 'Chart data',
     },
     {
       name: 'metrics',
@@ -46,91 +33,127 @@ export const meta = {
       array: true,
       label: 'Metrics',
       config: {
-        dataset: 'ds'
+        dataset: 'ds',
       },
-      category: 'Configure chart'
+      category: 'Chart data',
+    },
+    {
+      name: 'granularity',
+      type: 'granularity',
+      label: 'Granularity',
+      defaultValue: 'day',
+      category: 'Variables to configure',
     },
     {
       name: 'timeFilter',
       type: 'timeRange',
       label: 'Primary date range',
       description: 'Date range',
-      category: 'Chart settings'
+      category: 'Variables to configure',
     },
     {
       name: 'prevTimeFilter',
       type: 'timeRange',
       label: 'Comparison date range',
       description: 'Date range',
-      category: 'Chart settings'
+      category: 'Variables to configure',
+    },
+    {
+      name: 'title',
+      type: 'string',
+      label: 'Title',
+      description: 'The title for the chart',
+      category: 'Chart settings',
+    },
+    {
+      name: 'description',
+      type: 'string',
+      label: 'Description',
+      description: 'The description for the chart',
+      category: 'Chart settings',
     },
     {
       name: 'xAxisTitle',
       type: 'string',
       label: 'X-Axis Title',
-      category: 'Chart settings'
+      category: 'Chart settings',
     },
     {
       name: 'yAxisTitle',
       type: 'string',
       label: 'Y-Axis Title',
-      category: 'Chart settings'
+      category: 'Chart settings',
     },
     {
       name: 'showLabels',
       type: 'boolean',
       label: 'Show Labels',
       category: 'Chart settings',
-      defaultValue: false
+      defaultValue: false,
     },
     {
       name: 'applyFill',
       type: 'boolean',
       label: 'Color fill space under line',
       category: 'Chart settings',
-      defaultValue: false
+      defaultValue: false,
     },
     {
       name: 'yAxisMin',
       type: 'number',
       label: 'Y-Axis minimum value',
-      category: 'Chart settings'
+      category: 'Chart settings',
     },
     {
       name: 'showLegend',
       type: 'boolean',
       label: 'Show Legend',
       category: 'Chart settings',
-      defaultValue: true
-    },
-    {
-      name: 'dps',
-      type: 'number',
-      label: 'Decimal Places',
-      category: 'Formatting'
+      defaultValue: true,
     },
     {
       name: 'enableDownloadAsCSV',
       type: 'boolean',
       label: 'Show download as CSV',
       category: 'Export options',
-      defaultValue: true
-    }
-  ]
+      defaultValue: true,
+    },
+    {
+      name: 'enableDownloadAsPNG',
+      type: 'boolean',
+      label: 'Show download as PNG',
+      category: 'Export options',
+      defaultValue: true,
+    },
+    {
+      name: 'dps',
+      type: 'number',
+      label: 'Decimal Places',
+      category: 'Formatting',
+    },
+  ],
 } as const satisfies EmbeddedComponentMeta;
 
 export default defineComponent(Component, meta, {
   props: (inputs: Inputs<typeof meta>) => {
+    const orderProp: OrderBy[] = [];
+
+    orderProp.push({
+      property: inputs.xAxis,
+      direction: 'desc',
+    });
+
     return {
       ...inputs,
       results: loadData({
         from: inputs.ds,
         limit: 500,
+        orderBy: orderProp,
         timeDimensions: [
           {
             dimension: inputs.xAxis?.name,
-            granularity: inputs.granularity
-          }
+            granularity: inputs.granularity,
+          },
         ],
         measures: inputs.metrics,
         filters:
@@ -139,20 +162,21 @@ export default defineComponent(Component, meta, {
                 {
                   property: inputs.xAxis,
                   operator: 'inDateRange',
-                  value: inputs.timeFilter
-                }
+                  value: inputs.timeFilter,
+                },
               ]
-            : undefined
+            : undefined,
       }),
       prevResults: loadData({
         from: inputs.ds,
         timeDimensions: [
           {
             dimension: inputs.xAxis?.name,
-            granularity: inputs.granularity
-          }
+            granularity: inputs.granularity,
+          },
         ],
         limit: !inputs.prevTimeFilter ? 1 : 500,
+        orderBy: orderProp,
         measures: inputs.metrics,
         filters:
           inputs.prevTimeFilter && inputs.xAxis
@@ -160,11 +184,15 @@ export default defineComponent(Component, meta, {
                 {
                   property: inputs.xAxis,
                   operator: 'inDateRange',
-                  value: inputs.prevTimeFilter
-                }
+                  value: {
+                    from: inputs.prevTimeFilter.from,
+                    relativeTimeString: '',
+                    to: inputs.prevTimeFilter.to,
+                  },
+                },
               ]
-            : undefined
-      })
+            : undefined,
+      }),
     };
-  }
+  },
 });

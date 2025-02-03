@@ -1,0 +1,260 @@
+cubes:
+  - name: timetocloserequests
+    title: "Time to close requests"
+    data_source: apidb
+    sql: >
+      select
+        "Status" as Status,
+        case
+          when extract(year from "AverageCompletionTime") = 0
+            and extract(month from "AverageCompletionTime") = 0
+            and extract(day from "AverageCompletionTime") = 0
+            and extract(hour from "AverageCompletionTime") = 0
+            and extract(minute from "AverageCompletionTime") = 0 then 'Less than a minute'
+          else
+            CONCAT(
+              case
+                when extract(year from "AverageCompletionTime") > 0
+                  or extract(month from "AverageCompletionTime") > 0
+                  or extract(day from "AverageCompletionTime") > 0 then CONCAT(
+                    (
+                      extract(year from "AverageCompletionTime") * 365 * 24
+                    ) + (
+                      extract(month from "AverageCompletionTime") * 30 * 24
+                    ) + (
+                      extract(day from "AverageCompletionTime")
+                    ), ' days, '
+                  )
+                else ''
+              end,
+              case
+                when extract(hour from "AverageCompletionTime") > 0
+                  or extract(year from "AverageCompletionTime") > 0
+                  or extract(month from "AverageCompletionTime") > 0
+                  or extract(day from "AverageCompletionTime") > 0 then CONCAT(
+                    extract(hour from "AverageCompletionTime"), ' hours and '
+                  )
+                else ''
+              end,
+              case
+                when extract(minute from "AverageCompletionTime") > 0 then CONCAT(
+                  extract(minute from "AverageCompletionTime"), ' minutes'
+                )
+                else ''
+              end
+            )
+        end as FormatttedAverageCompletionTime,
+        case
+          when extract(year from "P25") = 0
+            and extract(month from "P25") = 0
+            and extract(day from "P25") = 0
+            and extract(hour from "P25") = 0
+            and extract(minute from "P25") = 0 then 'Less than a minute'
+          else
+            CONCAT(
+              case
+                when extract(year from "P25") > 0
+                  or extract(month from "P25") > 0
+                  or extract(day from "P25") > 0 then CONCAT(
+                    (
+                      extract(year from "P25") * 365 * 24
+                    ) + (
+                      extract(month from "P25") * 30 * 24
+                    ) + (
+                      extract(day from "P25")
+                    ), ' days, '
+                  )
+                else ''
+              end,
+              case
+                when extract(hour from "P25") > 0
+                  or extract(year from "P25") > 0
+                  or extract(month from "P25") > 0
+                  or extract(day from "P25") > 0 then CONCAT(
+                    extract(hour from "P25"), ' hours and '
+                  )
+                else ''
+              end,
+              case
+                when extract(minute from "P25") > 0 then CONCAT(
+                  extract(minute from "P25"), ' minutes'
+                )
+                else ''
+              end
+            )
+        end as FormatttedP25,
+        case
+          when extract(year from "P50") = 0
+            and extract(month from "P50") = 0
+            and extract(day from "P50") = 0
+            and extract(hour from "P50") = 0
+            and extract(minute from "P50") = 0 then 'Less than a minute'
+          else
+            CONCAT(
+              case
+                when extract(year from "P50") > 0
+                  or extract(month from "P50") > 0
+                  or extract(day from "P50") > 0 then CONCAT(
+                    (
+                      extract(year from "P50") * 365 * 24
+                    ) + (
+                      extract(month from "P50") * 30 * 24
+                    ) + (
+                      extract(day from "P50")
+                    ), ' days, '
+                  )
+                else ''
+              end,
+              case
+                when extract(hour from "P50") > 0
+                  or extract(year from "P50") > 0
+                  or extract(month from "P50") > 0
+                  or extract(day from "P50") > 0 then CONCAT(
+                    extract(hour from "P50"), ' hours and '
+                  )
+                else ''
+              end,
+              case
+                when extract(minute from "P50") > 0 then CONCAT(
+                  extract(minute from "P50"), ' minutes'
+                )
+                else ''
+              end
+            )
+        end as FormatttedP50,case
+          when extract(year from "P75") = 0
+            and extract(month from "P75") = 0
+            and extract(day from "P75") = 0
+            and extract(hour from "P75") = 0
+            and extract(minute from "P75") = 0 then 'Less than a minute'
+          else
+            CONCAT(
+              case
+                when extract(year from "P75") > 0
+                  or extract(month from "P75") > 0
+                  or extract(day from "P75") > 0 then CONCAT(
+                    (
+                      extract(year from "P75") * 365 * 24
+                    ) + (
+                      extract(month from "P75") * 30 * 24
+                    ) + (
+                      extract(day from "P75")
+                    ), ' days, '
+                  )
+                else ''
+              end,
+              case
+                when extract(hour from "P75") > 0
+                  or extract(year from "P75") > 0
+                  or extract(month from "P75") > 0
+                  or extract(day from "P75") > 0 then CONCAT(
+                    extract(hour from "P75"), ' hours and '
+                  )
+                else ''
+              end,
+              case
+                when extract(minute from "P75") > 0 then CONCAT(
+                  extract(minute from "P75"), ' minutes'
+                )
+                else ''
+              end
+            )
+        end as FormatttedP75,
+        "NumberOfRequest" as NumberOfRequests
+      from
+        (
+          with baseRequest as (
+            select
+              pbr."Id",
+              pbrs2."Name" as "Status",
+              MIN(
+                case when pbr."AvailableAt" is not null then pbr."AvailableAt" else pbr."CreatedAt" end
+              ) as "RequestStartedAt",
+              MAX(ct."UpdatedAt") as "LastTaskExecutedAt",
+              age(
+                MAX(ct."UpdatedAt"),
+                MIN(
+                  case when pbr."AvailableAt" is not null then pbr."AvailableAt" else pbr."CreatedAt" end
+                )
+              ) as "CompletionTime"
+            from
+              api."PolicyBasedRequestSteps" pbrs
+              inner join api."PolicyBasedRequests" pbr on pbr."Id" = pbrs."PolicyBasedRequestId"
+              inner join api."PolicyBasedRequestStatuses" pbrs2 on pbrs2."Id" = pbr."PolicyBasedRequestStatusId"
+              inner join api."CakewalkTasks" ct on ct."Id" = pbrs."CakewalkTaskId"
+              inner join api."CakewalkTaskStatuses" cts on cts."Id" = ct."CakewalkTaskStatusId"
+            where
+              pbrs2."Name" in (
+                'Declined', 'Cancelled', 'Completed'
+              )
+            group by
+              pbr."Id",
+              pbrs2."Name"
+          )
+          select
+            "Status",
+            AVG("CompletionTime") as "AverageCompletionTime",
+            MIN("CompletionTime") as "MinCompletionTime",
+            percentile_cont(0.25) within group (
+              order by
+                "CompletionTime"
+            ) as "P25",
+            percentile_cont(0.5) within group (
+              order by
+                "CompletionTime"
+            ) as "P50",
+            percentile_cont(0.75) within group (
+              order by
+                "CompletionTime"
+            ) as "P75",
+            MAX("CompletionTime") as "MaxCompletionTime",
+            COUNT(distinct "Id") as "NumberOfRequest"
+          from
+            baseRequest
+          group by
+            "Status"
+          order by
+            "Status"
+        ) something
+    dimensions:
+      - name: Status
+        title: "Request Status"
+        sql: Status
+        type: string
+
+      - name: AverageCompletionTime
+        title: "Average Completion Time"
+        sql: AverageCompletionTime
+        type: string
+
+      - name: MinCompletionTime
+        title: "Min completion time"
+        sql: MinCompletionTime
+        type: string
+
+      - name: P25
+        title: "P25"
+        sql: P25
+        type: string
+
+      - name: P50
+        title: "P50"
+        sql: P50
+        type: string
+
+      - name: P75
+        title: "P75"
+        sql: P75
+        type: string
+
+      - name: MaxCompletionTime
+        title: "Max completion time"
+        sql: MaxCompletionTime
+        type: string
+
+      - name: NumberOfRequest
+        title: "Number of requests"
+        sql: NumberOfRequest
+        type: number
+
+

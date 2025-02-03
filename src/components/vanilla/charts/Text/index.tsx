@@ -1,16 +1,21 @@
 import React from 'react';
-
-
-
-import Container from '../../Container';
+import Title from '../../Title';
+import Description from '../../Description';
 
 type Props = {
-  title: string;
-  body: string;
+  title?: string;
+  body?: string;
+  titleFontSize?: number;
+  bodyFontSize?: number;
 };
 
 export default (props: Props) => {
-  const { title, body } = props;
+  const { title, body, titleFontSize, bodyFontSize  } = props;
 
-  return <Container className='cakewalk-title' title={title}>{body}</Container>;
+  return (
+    <div className='cakewalk-title'>
+      <Title title={title} />
+      <Description description={body}/>
+    </div>
+  );
 };
