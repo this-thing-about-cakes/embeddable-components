@@ -224,7 +224,7 @@ cubes:
 
       - name: AverageCompletionTime
         title: "Average Completion Time"
-        sql: AverageCompletionTime
+        sql: FormatttedAverageCompletionTime
         type: string
 
       - name: MinCompletionTime
@@ -234,17 +234,17 @@ cubes:
 
       - name: P25
         title: "P25"
-        sql: P25
+        sql: FormatttedP25
         type: string
 
       - name: P50
         title: "P50"
-        sql: P50
+        sql: FormatttedP50
         type: string
 
       - name: P75
         title: "P75"
-        sql: P75
+        sql: FormatttedP75
         type: string
 
       - name: MaxCompletionTime
@@ -254,7 +254,7 @@ cubes:
 
       - name: NumberOfRequest
         title: "Number of requests"
-        sql: NumberOfRequest
+        sql: NumberOfRequests
         type: number
 
 
