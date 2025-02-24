@@ -11,4 +11,4 @@
 - name: Sample Customer
   securityContext:
     country: Germany
-  environment: b79c515b-22bb-4bd4-8f95-8a8519b10755
+  environment: a0f98fa6-7eb3-4094-9335-2967f25604e6
